@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Terminal 3 VC Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background-color: #f7f9fc;
+      color: #333;
+    }
+
+    input, button {
+      padding: 8px;
+      margin: 5px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    pre {
+      background-color: #efefef;
+      padding: 10px;
+      overflow-x: auto;
+    }
+
+    .checkbox-group {
+      margin-top: 10px;
+    }
+
+    .section {
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Terminal 3 Verifiable Credentials Demo</h1>
+
+  <div class="section">
+    <h2>Issue Credential</h2>
+    <label>KYC Status:</label>
+    <input type="text" id="kyc" value="passed">
+
+    <label>Date of Birth:</label>
+    <input type="date" id="dob" value="1990-01-01">
+
+    <label>Nationality:</label>
+    <input type="text" id="nationality" placeholder="Enter nationality">
+
+    <button onclick="issue()">Issue Credential</button>
+  </div>
+
+  <div class="section">
+    <h2>Verify Credential</h2>
+    <label>Credential ID (Hex):</label>
+    <input type="text" id="credentialHex" placeholder="Enter Credential ID">
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="allFields" checked> <label for="allFields">All Credential Fields</label><br>
+      <input type="checkbox" id="kycOnly"> <label for="kycOnly">KYC Status</label><br>
+      <input type="checkbox" id="nationalityOnly"> <label for="nationalityOnly">Nationality</label><br>
+      <input type="checkbox" id="dobOnly"> <label for="dobOnly">Date of Birth</label><br>
+    </div>
+
+    <button onclick="verify()">Verify Credential</button>
+  </div>
+
+  <pre id="output"></pre>
+
+  <script>
+    let issuedCredential;
+
+    async function issue() {
+      const credentialData = {
+        kyc: document.getElementById('kyc').value,
+        date_of_birth: document.getElementById('dob').value,
+        nationality: document.getElementById('nationality').value
+      };
+
+      const res = await fetch('/issue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentialData)
+      });
+
+      const data = await res.json();
+      issuedCredential = data.credential;
+      document.getElementById('credentialHex').value = issuedCredential.id;
+      show(issuedCredential);
+    }
+
+    async function verify() {
+        const hexInput = document.getElementById('credentialHex').value;
+        if (!issuedCredential || hexInput !== issuedCredential.id) {
+            alert('Invalid Credential ID');
+            return;
+        }
+
+        const displayedCredential = {};
+
+        if (document.getElementById('allFields').checked) {
+            Object.assign(displayedCredential, issuedCredential.credentialSubject);
+        } else {
+            if (document.getElementById('kycOnly').checked) {
+            displayedCredential.kyc = issuedCredential.credentialSubject.kyc;
+            }
+            if (document.getElementById('nationalityOnly').checked) {
+            displayedCredential.nationality = issuedCredential.credentialSubject.nationality;
+            }
+            if (document.getElementById('dobOnly').checked) {
+            displayedCredential.date_of_birth = issuedCredential.credentialSubject.date_of_birth;
+            }
+        }
+
+        show(displayedCredential);
+    }
+
+
+    function show(data) {
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+
+</body>
+</html>
