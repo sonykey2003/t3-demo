@@ -35,13 +35,13 @@ terminal3-demo/
 ### 1. Clone or Download the Repository
 
 ```bash
-git clone <repository_url>
-cd terminal3-demo
+git clone https://github.com/sonykey2003/t3-demo
+cd t3-demo
 ```
 
 ### 2. Build and Run with Docker Compose
 
-From the root project folder (`terminal3-demo`), execute:
+From the root project folder (`t3-demo`), execute:
 
 ```bash
 docker compose up --build
